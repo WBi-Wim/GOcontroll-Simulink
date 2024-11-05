@@ -39,6 +39,10 @@
 %%***************************************************************************************
 
 function ManualUpload(modelname, ip, options)
+% MANUALUPLOAD Upload a model and its accompanying a2l file to a controller running the go-upload-server
+%	MANUALUPLOAD(MODEL, ADDRESS) uploads the elf and a2l related to MODEL to ADDRESS at the default port 8001
+%	MANUALUPLOAD(MODEL, ADDRESS, port=PORT) uploads the elf and a2l related to MODEL to ADDRESS:PORT
+
 arguments
 	modelname {mustBeTextScalar}
 	ip {mustBeTextScalar}

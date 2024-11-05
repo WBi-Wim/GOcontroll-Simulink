@@ -33,6 +33,9 @@
 
 %function BlockTypeSetup(block, system) void
 	%<LibAddToCommonIncludes("iio.h")>
+	%<LibAddToCommonIncludes("errno.h")>
+	%<LibAddToCommonIncludes("stdio.h")>
+	%<LibAddToCommonIncludes("string.h")>
 %endfunction
 
 %function BlockInstanceSetup(block, system) void
