@@ -30,7 +30,7 @@
 
 function [version] = ert_linux_target_version()
 
-version = 'GOcontroll V4.4.0-rc3';
+version = 'GOcontroll V4.4.0-rc4';
 
 %% V4.4.0 Update -:
 % Added standardised a version block to help with in model version management
