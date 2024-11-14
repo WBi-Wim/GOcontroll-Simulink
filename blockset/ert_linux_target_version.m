@@ -30,14 +30,16 @@
 
 function [version] = ert_linux_target_version()
 
-version = 'GOcontroll V4.4.0-rc4';
+version = 'GOcontroll V4.4.0-rc5';
 
 %% V4.4.0 Update -:
+% BREAKING Fixed mask errors in the 10 channel input, reset pulse counter and all the output blocks have been fixed this can reset certain parameters.
+% In the case of the reset pulse counter block the library link has to be repaired, by changing 'Puls' to 'Pulse' in the link path
+% BREAKING Fixed output module groundshift datatype, it is now an int16
+% BREAKING Diagnostic blocks now follow the SAE J1939 DTC standard, this dramatically changes how they work
 % Added standardised a version block to help with in model version management
 % Added config parameter to Memory read, which reads a config parameter from /etc/go-simulink/
 % User can now configure a simulink codegen/cache folder to prevent cluttering of the project folder
-% Fixed output module groundshift datatype
-% Diagnostic blocks now follow the SAE J1939 DTC standard
 % Added read accelerometer block for reading out the accelerometer on the moduline mini
 
 %% V4.3.2 Update 8-8-2024:
