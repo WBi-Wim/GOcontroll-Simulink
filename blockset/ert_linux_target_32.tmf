@@ -72,39 +72,39 @@ COMPILER_TOOL_CHAIN = default
 #  EXTMODE_STATIC      - yes (1) or no (0): Use static instead of dynamic mem alloc.
 #  EXTMODE_STATIC_SIZE - Size of static memory allocation buffer.
 #  MULTI_INSTANCE_CODE - Is the generated code multi instantiable (1/0)?
-MODEL                = |>MODEL_NAME<|
-MODULES              = |>MODEL_MODULES<|
-MAKEFILE             = |>MAKEFILE_NAME<|
-MATLAB_ROOT          = |>MATLAB_ROOT<|
-ALT_MATLAB_ROOT      = |>ALT_MATLAB_ROOT<|
-MATLAB_BIN           = |>MATLAB_BIN<|
-ALT_MATLAB_BIN       = |>ALT_MATLAB_BIN<|
-S_FUNCTIONS          = |>S_FUNCTIONS<|
-S_FUNCTIONS_LIB      = |>S_FUNCTIONS_LIB<|
-NUMST                = |>NUMST<|
-NCSTATES             = |>NCSTATES<|
-BUILDARGS            = |>BUILDARGS<|
-MULTITASKING         = |>MULTITASKING<|
-INTEGER_CODE         = |>INTEGER_CODE<|
-MAT_FILE             = |>MAT_FILE<|
-ONESTEPFCN           = |>COMBINE_OUTPUT_UPDATE_FCNS<|
-TERMFCN              = |>INCLUDE_MDL_TERMINATE_FCN<|
-B_ERTSFCN            = |>GENERATE_ERT_S_FUNCTION<|
-MEXEXT               = |>MEXEXT<|
-EXT_MODE             = |>EXT_MODE<|
-TMW_EXTMODE_TESTING  = |>TMW_EXTMODE_TESTING<|
-EXTMODE_TRANSPORT    = |>EXTMODE_TRANSPORT<|
-EXTMODE_STATIC       = |>EXTMODE_STATIC_ALLOC<|
-EXTMODE_STATIC_SIZE  = |>EXTMODE_STATIC_ALLOC_SIZE<|
-MULTI_INSTANCE_CODE  = |>MULTI_INSTANCE_CODE<|
-MODELREFS               = |>MODELREFS<|
-SHARED_SRC              = |>SHARED_SRC<|
-SHARED_SRC_DIR          = |>SHARED_SRC_DIR<|
-SHARED_BIN_DIR          = |>SHARED_BIN_DIR<|
-SHARED_LIB              = |>SHARED_LIB<|
-GEN_SAMPLE_MAIN         = |>GEN_SAMPLE_MAIN<|
-TARGET_LANG_EXT         = |>TARGET_LANG_EXT<|
-MEX_OPT_FILE            = |>MEX_OPT_FILE<|
+MODEL                     = |>MODEL_NAME<|
+MODULES                   = |>MODEL_MODULES<|
+MAKEFILE                  = |>MAKEFILE_NAME<|
+MATLAB_ROOT               = |>MATLAB_ROOT<|
+ALT_MATLAB_ROOT           =  |>ALT_MATLAB_ROOT<|
+MATLAB_BIN                = |>MATLAB_BIN<|
+ALT_MATLAB_BIN            = |>ALT_MATLAB_BIN<|
+S_FUNCTIONS               = |>S_FUNCTIONS<|
+S_FUNCTIONS_LIB           = |>S_FUNCTIONS_LIB<|
+NUMST                     = |>NUMST<|
+NCSTATES                  = |>NCSTATES<|
+BUILDARGS                 = |>BUILDARGS<|
+MULTITASKING              = |>MULTITASKING<|
+INTEGER_CODE              = |>INTEGER_CODE<|
+MAT_FILE                  = |>MAT_FILE<|
+ONESTEPFCN                = |>COMBINE_OUTPUT_UPDATE_FCNS<|
+TERMFCN                   = |>INCLUDE_MDL_TERMINATE_FCN<|
+B_ERTSFCN                 = |>GENERATE_ERT_S_FUNCTION<|
+MEXEXT                    = |>MEXEXT<|
+EXT_MODE                  = |>EXT_MODE<|
+TMW_EXTMODE_TESTING       = |>TMW_EXTMODE_TESTING<|
+EXTMODE_TRANSPORT         = |>EXTMODE_TRANSPORT<|
+EXTMODE_STATIC            = |>EXTMODE_STATIC_ALLOC<|
+EXTMODE_STATIC_SIZE       = |>EXTMODE_STATIC_ALLOC_SIZE<|
+MULTI_INSTANCE_CODE       = |>MULTI_INSTANCE_CODE<|
+MODELREFS                 = |>MODELREFS<|
+SHARED_SRC                = |>SHARED_SRC<|
+SHARED_SRC_DIR            = |>SHARED_SRC_DIR<|
+SHARED_BIN_DIR            = |>SHARED_BIN_DIR<|
+SHARED_LIB                = |>SHARED_LIB<|
+GEN_SAMPLE_MAIN           = |>GEN_SAMPLE_MAIN<|
+TARGET_LANG_EXT           = |>TARGET_LANG_EXT<|
+MEX_OPT_FILE              = |>MEX_OPT_FILE<|
 
 
 #|---------------------------------------------------------------------------------------
@@ -116,6 +116,11 @@ MODELREF_INC_PATH         = |>START_MDLREFINC_EXPAND_INCLUDES<|-I|>MODELREF_INC_
 RELATIVE_PATH_TO_ANCHOR   = |>RELATIVE_PATH_TO_ANCHOR<|
 MODELREF_TARGET_TYPE      = |>MODELREF_TARGET_TYPE<|
 
+
+#|---------------------------------------------------------------------------------------
+#| Additional tokens
+#|---------------------------------------------------------------------------------------
+START_DIR                 = |>START_DIR<|
 
 #|---------------------------------------------------------------------------------------
 #| Environment Specifications
@@ -133,8 +138,12 @@ MODEL_NAME = $(MODEL)
 
 # Set some commonly used paths
 BIN_PATH     = $(RELATIVE_PATH_TO_ANCHOR)
-SRC_PATH	 = $(RELATIVE_PATH_TO_ANCHOR)\blockset\code
-XCP_PATH	 = $(RELATIVE_PATH_TO_ANCHOR)\blockset\code\XCP
+SRC_PATH     = $(RELATIVE_PATH_TO_ANCHOR)\blockset\code
+XCP_PATH     = $(RELATIVE_PATH_TO_ANCHOR)\blockset\code\XCP
+
+#WBi addition to store the referenced lib in the build directory
+#WBi NOTE!! path below hardcoded to slprj (standard matlab) ert_linux (name tlc file!!) Needs a better solution
+SLPRJ_PATH   = $(START_DIR)/slprj/ert_linux/$(MODEL)
 
 #|---------------------------------------------------------------------------------------|
 #| Compiler binaries                                                                     |
@@ -280,11 +289,21 @@ LINK_OBJS = $(SRCS_OBJS) $(LOCAL_USER_OBJS)
 SHARED_OBJS := $(addsuffix .obj, $(basename $(wildcard $(SHARED_SRC))))
 FMT_SHARED_OBJS = $(subst /,\,$(SHARED_OBJS))
 
+# MODELREF_TARGET_TYPE == RTW; referenced model
+ifeq ($(MODELREF_TARGET_TYPE), RTW)
+  # sub-model for RTW
+  PRODUCT = $(SLPRJ_PATH)/$(MODELLIB)
+  BUILD_PRODUCT_TYPE = "library" 
+endif
 
 #|---------------------------------------------------------------------------------------
 #| Build rules
 #|---------------------------------------------------------------------------------------
-$(PRODUCT): $(BIN_PATH)/$(MODEL_NAME).elf
+# Separate set of build rules to accomodate for referenced models
+ifeq ($(MODELREF_TARGET_TYPE), NONE)
+#Topmodel for RTW
+  # WBi PRODUCT needed? not defined.
+  $(PRODUCT): $(BIN_PATH)/$(MODEL_NAME).elf
 	@$(OD) $(OD_FLAGS) $< > $(BIN_PATH)/$(MODEL_NAME).map
 	@echo ### Created Map file: $(MODEL_NAME).map
 	@$(OC) $(OC_FLAGS_BIN) $< $(BIN_PATH)/$(MODEL_NAME).bin
@@ -294,11 +313,22 @@ $(PRODUCT): $(BIN_PATH)/$(MODEL_NAME).elf
 	@echo ### Displaying program size info
 	@$(SZ) --format=berkeley $<
 
-$(BIN_PATH)/$(MODEL_NAME).elf: clean $(OBJS) $(LIBS) $(SHARED_LIB) $(SRC_DEP) $(MODELREF_LINK_LIBS)
+  $(BIN_PATH)/$(MODEL_NAME).elf: clean $(OBJS) $(LIBS) $(SHARED_LIB) $(SRC_DEP) $(MODELREF_LINK_LIBS)
 	@echo ### Linking $(notdir $@)
 	@$(LD) -Wl,--start-group $(LINK_OBJS) $(MODELREF_LINK_LIBS) $(SHARED_LIB) $(LIBS) -Wl,--end-group\
         -o $@ $(LINKER_FLAGS)
 	@echo ### Created $(MODEL_NAME).elf
+
+else ifeq ($(MODELREF_TARGET_TYPE), RTW)
+  $(PRODUCT) : $(OBJS) $(SHARED_LIB) $(SRC_DEP) $(LIBS) $(MODELREF_LINK_LIBS)
+	@$(AR) ruvs $(SLPRJ_PATH)/$(MODELLIB) $(LINK_OBJS)
+	$(ECHO) ### Created $(MODELLIB)
+	$(ECHO) ### Created $(BUILD_PRODUCT_TYPE): $(notdir $@)
+else
+  # note: MODELREF_TARGET_TYPE can also be SIM when building model as simulation, it will likely break? ==> TEST
+
+endif
+
 
 %.obj : %.c
 	@echo ### Compiling $(notdir $<) -o $(notdir $@)
